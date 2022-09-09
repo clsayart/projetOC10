@@ -14,9 +14,30 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from rest_framework import routers
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+from authentication.views import RegistrationViewset
+from softdeskapp.views import ProjectViewset, ContributorAPIView, IssueAPIView, CommentAPIView, \
+    CommentDetailAPIView, IssueDetailAPIView, ContributorDetailAPIView
+
+router = routers.DefaultRouter()
+router.register('signup', RegistrationViewset, basename='signup')
+router.register('projects', ProjectViewset, basename='projects')
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api-auth/', include('rest_framework.urls'))
+    path('api-auth/', include('rest_framework.urls')),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/', include(router.urls)),
+    path('api/projects/<int:id>/users/', ContributorAPIView.as_view()),
+    path('api/projects/<int:id>/users/<int:user_id>/', ContributorDetailAPIView.as_view()),
+    path('api/projects/<int:project_id>/issues/', IssueAPIView.as_view()),
+    path('api/projects/<int:p_id>/issues/<int:issue_id>/', IssueDetailAPIView.as_view()),
+    path('api/projects/<int:p_id>/issues/<int:issue_id>/comments/', CommentAPIView.as_view()),
+    path('api/projects/<int:pr_id>/issues/<int:issue_id>/comments/<int:comment_id>/', CommentDetailAPIView.as_view()),
+
 ]
