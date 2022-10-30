@@ -8,7 +8,7 @@ from authentication.models import User
 from .models import Project, Contributor, Issue, Comment
 from .serializers import ProjectSerializer, ProjectDetailSerializer, ContributorSerializer, IssueSerializer, \
     CommentSerializer
-from .permissions import IsContributor, IsIssueAuthor, IsProjectAuthor
+from .permissions import IsContributor, IsIssueAuthor, IsProjectAuthor, IsCommentAuthor
 
 
 # VERIFIER LISTE WORD QUE CHAQUE ACTION FAIT BIEN CE QUI EST DEMANDE
@@ -68,7 +68,7 @@ class ProjectViewset(ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         project = Project.objects.filter(pk=kwargs['pk'])
-        print("project", project)
+        print('destroy, view project')
         project = project.get()
         project.delete()
         # DOIT SUPPRIMER LES ISSUES AUSSI
@@ -117,7 +117,7 @@ class ContributorDetailAPIView(APIView):
 
 
 class IssueAPIView(APIView):
-    permission_classes = (IsAuthenticated, IsContributor)  # AUTRES?
+    permission_classes = (IsAuthenticated, IsContributor, IsIssueAuthor)
 
     def get(self, request, **kwargs):
         issues = Issue.objects.filter(project_id=kwargs['project_id'])
@@ -156,11 +156,16 @@ class IssueAPIView(APIView):
 
 
 class IssueDetailAPIView(APIView):
-    permission_classes = (IsAuthenticated, IsContributor)
+    permission_classes = (IsAuthenticated, IsContributor, IsIssueAuthor)
 
     def get(self, request, **kwargs):
-        comment = Issue.objects.filter(id=self.kwargs['issue_id'])
-        serializers = IssueSerializer(comment, many=True)
+        issue = Issue.objects.filter(id=self.kwargs['issue_id'])
+        if not issue:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND
+            )
+        # try issue, except not issue?
+        serializers = IssueSerializer(issue, many=True)
         return Response(serializers.data)
 
     def put(self, request, **kwargs):
@@ -206,7 +211,7 @@ class IssueDetailAPIView(APIView):
 
 
 class CommentAPIView(APIView):
-    permission_classes = (IsAuthenticated, IsContributor)
+    permission_classes = (IsAuthenticated, IsContributor, IsCommentAuthor)
 
     def get(self, request, **kwargs):
 
@@ -238,7 +243,7 @@ class CommentAPIView(APIView):
 
 
 class CommentDetailAPIView(APIView):
-    permission_classes = (IsAuthenticated, IsContributor)
+    permission_classes = (IsAuthenticated, IsContributor, IsCommentAuthor)
 
     def get(self, request, **kwargs):
         comments = Comment.objects.filter(id=self.kwargs['comment_id'])
