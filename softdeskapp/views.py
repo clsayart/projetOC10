@@ -11,7 +11,6 @@ from .serializers import ProjectSerializer, ProjectDetailSerializer, Contributor
 from .permissions import IsContributor, IsIssueAuthor, IsProjectAuthor, IsCommentAuthor
 
 
-# VERIFIER LISTE WORD QUE CHAQUE ACTION FAIT BIEN CE QUI EST DEMANDE
 class ProjectViewset(ModelViewSet):
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated, IsContributor, IsProjectAuthor]
@@ -71,7 +70,6 @@ class ProjectViewset(ModelViewSet):
         print('destroy, view project')
         project = project.get()
         project.delete()
-        # DOIT SUPPRIMER LES ISSUES AUSSI
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -108,7 +106,6 @@ class ContributorDetailAPIView(APIView):
 
     def delete(self, request, **kwargs):
         contributor = Contributor.objects.filter(user=kwargs['user_id'], role='CONTRIBUTOR')
-        # RAJOUT ROLE = CONTRIBUTOR DANS LE FILTER?
         print("kwargs['user_id']", kwargs['user_id'])
         print("contributor", contributor)
 
